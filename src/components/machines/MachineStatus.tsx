@@ -12,12 +12,15 @@ import {
   Wrench,
   Activity
 } from 'lucide-react';
+import type { Database } from '@/integrations/supabase/types';
+
+type MachineStatus = Database['public']['Enums']['machine_status'];
 
 interface Machine {
   id: string;
   name: string;
   type: string;
-  status: string;
+  status: MachineStatus;
   location: string | null;
   last_maintenance: string | null;
   next_maintenance: string | null;
@@ -48,7 +51,7 @@ export function MachineStatus() {
     }
   };
 
-  const updateMachineStatus = async (machineId: string, newStatus: string) => {
+  const updateMachineStatus = async (machineId: string, newStatus: MachineStatus) => {
     try {
       const { error } = await supabase
         .from('machines')
@@ -62,7 +65,7 @@ export function MachineStatus() {
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: MachineStatus) => {
     switch (status) {
       case 'running': return <CheckCircle className="h-5 w-5 text-green-400" />;
       case 'idle': return <Clock className="h-5 w-5 text-yellow-400" />;
@@ -73,7 +76,7 @@ export function MachineStatus() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: MachineStatus) => {
     switch (status) {
       case 'running': return 'bg-green-500';
       case 'idle': return 'bg-yellow-500';
