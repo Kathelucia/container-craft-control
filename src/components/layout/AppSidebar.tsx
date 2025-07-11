@@ -62,7 +62,7 @@ const navigationItems = {
 };
 
 export function AppSidebar() {
-  const { collapsed } = useSidebar();
+  const { state } = useSidebar();
   const location = useLocation();
   const { user, logout, switchRole } = useAuth();
   const currentPath = location.pathname;
@@ -74,14 +74,16 @@ export function AppSidebar() {
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-blue-600/20 text-blue-400 border-r-2 border-blue-400' : 'hover:bg-gray-800/50 text-gray-300 hover:text-white';
 
+  const isCollapsed = state === 'collapsed';
+
   return (
-    <Sidebar className={collapsed ? 'w-16' : 'w-64'} collapsible>
+    <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="icon">
       <SidebarContent className="bg-gray-900 border-r border-gray-800">
         {/* Header */}
         <div className="p-4 border-b border-gray-800">
           <div className="flex items-center space-x-3">
             <Factory className="h-8 w-8 text-blue-400" />
-            {!collapsed && (
+            {!isCollapsed && (
               <div>
                 <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   BetaFlow
@@ -93,7 +95,7 @@ export function AppSidebar() {
         </div>
 
         {/* User Profile */}
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="p-4 border-b border-gray-800">
             <DropdownMenu>
               <DropdownMenuTrigger className="w-full">
@@ -135,7 +137,7 @@ export function AppSidebar() {
         {/* Navigation */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-400 uppercase tracking-wider text-xs">
-            {!collapsed && 'Navigation'}
+            {!isCollapsed && 'Navigation'}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -144,7 +146,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild>
                     <NavLink to={item.url} end className={getNavClass}>
                       <item.icon className="h-5 w-5" />
-                      {!collapsed && <span className="ml-3">{item.title}</span>}
+                      {!isCollapsed && <span className="ml-3">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
