@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +9,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProductionManagerDashboard } from "@/components/dashboard/ProductionManagerDashboard";
 import { MachineOperatorDashboard } from "@/components/dashboard/MachineOperatorDashboard";
 import { AdminExecutiveDashboard } from "@/components/dashboard/AdminExecutiveDashboard";
+import { ProductionWorkflow } from "@/components/production/ProductionWorkflow";
+import { MachineStatus } from "@/components/machines/MachineStatus";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -77,7 +78,7 @@ const App = () => (
               path="/production"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Production Workflow - Coming Soon</div>
+                  <ProductionWorkflow />
                 </ProtectedRoute>
               }
             />
@@ -85,7 +86,7 @@ const App = () => (
               path="/machines"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Machine Status - Coming Soon</div>
+                  <MachineStatus />
                 </ProtectedRoute>
               }
             />
