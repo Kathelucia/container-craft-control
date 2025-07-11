@@ -11,6 +11,11 @@ import { MachineOperatorDashboard } from "@/components/dashboard/MachineOperator
 import { AdminExecutiveDashboard } from "@/components/dashboard/AdminExecutiveDashboard";
 import { ProductionWorkflow } from "@/components/production/ProductionWorkflow";
 import { MachineStatus } from "@/components/machines/MachineStatus";
+import { SalesOrders } from "@/components/sales/SalesOrders";
+import { InventoryManagement } from "@/components/inventory/InventoryManagement";
+import { EmployeeManagement } from "@/components/employees/EmployeeManagement";
+import { Analytics } from "@/components/analytics/Analytics";
+import { Reports } from "@/components/reports/Reports";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -94,7 +99,7 @@ const App = () => (
               path="/analytics"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Analytics - Coming Soon</div>
+                  <Analytics />
                 </ProtectedRoute>
               }
             />
@@ -102,7 +107,7 @@ const App = () => (
               path="/reports"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Reports - Coming Soon</div>
+                  <Reports />
                 </ProtectedRoute>
               }
             />
@@ -110,7 +115,7 @@ const App = () => (
               path="/batches"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">My Batches - Coming Soon</div>
+                  <ProductionWorkflow />
                 </ProtectedRoute>
               }
             />
@@ -126,7 +131,7 @@ const App = () => (
               path="/orders"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Sales & Orders - Coming Soon</div>
+                  <SalesOrders />
                 </ProtectedRoute>
               }
             />
@@ -134,7 +139,7 @@ const App = () => (
               path="/inventory"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Inventory - Coming Soon</div>
+                  <InventoryManagement />
                 </ProtectedRoute>
               }
             />
@@ -142,7 +147,7 @@ const App = () => (
               path="/employees"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Employees - Coming Soon</div>
+                  <EmployeeManagement />
                 </ProtectedRoute>
               }
             />
