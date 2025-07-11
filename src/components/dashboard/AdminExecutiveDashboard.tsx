@@ -1,0 +1,307 @@
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  AreaChart,
+  Area
+} from 'recharts';
+import {
+  DollarSign,
+  ShoppingCart,
+  Package,
+  TrendingUp,
+  Users,
+  FileText,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Download
+} from 'lucide-react';
+
+const salesData = [
+  { month: 'Jan', revenue: 45000, orders: 120 },
+  { month: 'Feb', revenue: 52000, orders: 135 },
+  { month: 'Mar', revenue: 48000, orders: 128 },
+  { month: 'Apr', revenue: 61000, orders: 150 },
+  { month: 'May', revenue: 55000, orders: 142 },
+  { month: 'Jun', revenue: 67000, orders: 165 },
+];
+
+const inventoryAlerts = [
+  { item: 'PET Plastic Granules', level: 15, minLevel: 20, status: 'low' },
+  { item: 'Blue Colorant', level: 8, minLevel: 10, status: 'critical' },
+  { item: 'Labels - 500ml', level: 2500, minLevel: 1000, status: 'good' },
+];
+
+const recentOrders = [
+  { id: 'ORD-2024-0145', customer: 'AquaPure Industries', amount: 12500, status: 'processing', date: '2024-01-15' },
+  { id: 'ORD-2024-0146', customer: 'FreshCorp', amount: 8750, status: 'shipped', date: '2024-01-15' },
+  { id: 'ORD-2024-0147', customer: 'BevMax Solutions', amount: 15200, status: 'pending', date: '2024-01-16' },
+];
+
+export function AdminExecutiveDashboard() {
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-white mb-2">Executive Dashboard</h1>
+        <p className="text-gray-400">Business insights, sales performance, and operational overview</p>
+      </div>
+
+      {/* Key Business Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="metric-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">Monthly Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">$67,000</div>
+            <div className="flex items-center text-sm">
+              <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
+              <span className="text-green-400">+22.8%</span>
+              <span className="text-gray-400 ml-1">vs last month</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">Active Orders</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">28</div>
+            <div className="text-sm text-gray-400">12 pending, 16 in progress</div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">Inventory Items</CardTitle>
+            <Package className="h-4 w-4 text-purple-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">156</div>
+            <div className="text-sm text-red-400">2 low stock alerts</div>
+          </CardContent>
+        </Card>
+
+        <Card className="metric-card">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-400">Active Employees</CardTitle>
+            <Users className="h-4 w-4 text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-white">24</div>
+            <div className="text-sm text-gray-400">3 shifts, 8 per shift</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Sales & Revenue Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="betaflow-card">
+          <CardHeader>
+            <CardTitle className="text-white">Revenue Trend</CardTitle>
+            <CardDescription>Monthly revenue performance</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={salesData}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#ffffff'
+                  }} 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="#3b82f6" 
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card className="betaflow-card">
+          <CardHeader>
+            <CardTitle className="text-white">Order Volume</CardTitle>
+            <CardDescription>Monthly order count</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                <XAxis dataKey="month" stroke="#9ca3af" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#1f2937', 
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#ffffff'
+                  }} 
+                />
+                <Bar dataKey="orders" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Orders & Inventory */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Orders */}
+        <Card className="betaflow-card">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <ShoppingCart className="h-5 w-5 text-blue-400 mr-2" />
+              Recent Orders
+            </CardTitle>
+            <CardDescription>Latest customer orders and their status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentOrders.map((order) => (
+                <div key={order.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-medium text-white">{order.id}</h3>
+                      <Badge 
+                        variant={order.status === 'shipped' ? 'default' : order.status === 'processing' ? 'secondary' : 'outline'}
+                        className={
+                          order.status === 'shipped' ? 'bg-green-500/10 text-green-400' :
+                          order.status === 'processing' ? 'bg-blue-500/10 text-blue-400' :
+                          'bg-yellow-500/10 text-yellow-400'
+                        }
+                      >
+                        {order.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-400">{order.customer}</p>
+                    <p className="text-sm text-gray-500">{order.date}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-white">${order.amount.toLocaleString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" className="w-full mt-4 border-blue-500 text-blue-400 hover:bg-blue-500/10">
+              View All Orders
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Inventory Alerts */}
+        <Card className="betaflow-card">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <AlertCircle className="h-5 w-5 text-yellow-400 mr-2" />
+              Inventory Alerts
+            </CardTitle>
+            <CardDescription>Stock levels requiring attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {inventoryAlerts.map((item, index) => (
+                <div 
+                  key={index} 
+                  className={`p-3 rounded-lg border ${
+                    item.status === 'critical' ? 'bg-red-500/10 border-red-500/20' :
+                    item.status === 'low' ? 'bg-yellow-500/10 border-yellow-500/20' :
+                    'bg-green-500/10 border-green-500/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-medium text-white">{item.item}</h3>
+                      <p className="text-sm text-gray-400">
+                        Current: {item.level} | Min: {item.minLevel}
+                      </p>
+                    </div>
+                    <Badge 
+                      variant={item.status === 'critical' ? 'destructive' : item.status === 'low' ? 'default' : 'secondary'}
+                      className={
+                        item.status === 'critical' ? 'bg-red-500 text-white' :
+                        item.status === 'low' ? 'bg-yellow-500 text-black' :
+                        'bg-green-500 text-white'
+                      }
+                    >
+                      {item.status}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button variant="outline" className="w-full mt-4 border-purple-500 text-purple-400 hover:bg-purple-500/10">
+              <Package className="h-4 w-4 mr-2" />
+              View Full Inventory
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Reports Section */}
+      <Card className="betaflow-card">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <FileText className="h-5 w-5 text-green-400 mr-2" />
+            Quick Reports
+          </CardTitle>
+          <CardDescription>Generate and download business reports</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Button variant="outline" className="flex items-center justify-center p-4 h-auto border-green-500 text-green-400 hover:bg-green-500/10">
+              <div className="text-center">
+                <Download className="h-6 w-6 mx-auto mb-2" />
+                <div className="font-medium">Sales Report</div>
+                <div className="text-xs text-gray-400">Monthly sales data</div>
+              </div>
+            </Button>
+            <Button variant="outline" className="flex items-center justify-center p-4 h-auto border-blue-500 text-blue-400 hover:bg-blue-500/10">
+              <div className="text-center">
+                <Download className="h-6 w-6 mx-auto mb-2" />
+                <div className="font-medium">Production Report</div>
+                <div className="text-xs text-gray-400">Manufacturing metrics</div>
+              </div>
+            </Button>
+            <Button variant="outline" className="flex items-center justify-center p-4 h-auto border-purple-500 text-purple-400 hover:bg-purple-500/10">
+              <div className="text-center">
+                <Download className="h-6 w-6 mx-auto mb-2" />
+                <div className="font-medium">Inventory Report</div>
+                <div className="text-xs text-gray-400">Stock levels & alerts</div>
+              </div>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
