@@ -25,6 +25,8 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -65,31 +67,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id).then(profile => {
-          setAuthState({
-            user: session.user,
-            profile,
-            session,
-            isAuthenticated: true,
-            isLoading: false
-          });
-        });
-      } else {
-        setAuthState({
-          user: null,
-          profile: null,
-          session: null,
-          isAuthenticated: false,
-          isLoading: false
-        });
-      }
-    });
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
 
-    // Listen for auth changes
+  const signUp = async (email: string, password: string, userData: any) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: userData
+        }
+      });
+      return { error };
+    } catch (error) {
+      return { error };
+    }
+  };
+
+  useEffect(() => {
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
@@ -113,6 +120,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchProfile(session.user.id).then(profile => {
+          setAuthState({
+            user: session.user,
+            profile,
+            session,
+            isAuthenticated: true,
+            isLoading: false
+          });
+        });
+      } else {
+        setAuthState({
+          user: null,
+          profile: null,
+          session: null,
+          isAuthenticated: false,
+          isLoading: false
+        });
+      }
+    });
+
     return () => subscription.unsubscribe();
   }, []);
 
@@ -135,7 +165,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider value={{
       ...authState,
       signOut,
-      refreshProfile
+      refreshProfile,
+      signIn,
+      signUp
     }}>
       {children}
     </AuthContext.Provider>
