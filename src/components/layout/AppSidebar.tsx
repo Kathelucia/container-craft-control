@@ -1,5 +1,4 @@
 
-import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   Sidebar,
@@ -10,7 +9,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from '@/components/ui/sidebar';
 import {
@@ -52,7 +50,7 @@ const navigationItems = {
     { title: 'Machine Status', url: '/machines', icon: Settings },
     { title: 'Quality Control', url: '/quality', icon: AlertTriangle },
   ],
-  admin_executive: [
+  operations_admin: [
     { title: 'Dashboard', url: '/dashboard', icon: Gauge },
     { title: 'Sales & Orders', url: '/orders', icon: ShoppingCart },
     { title: 'Inventory', url: '/inventory', icon: Package },
@@ -64,17 +62,29 @@ const navigationItems = {
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
-  const { user, logout, switchRole } = useAuth();
+  const { profile, signOut } = useAuth();
   const currentPath = location.pathname;
 
-  if (!user) return null;
+  if (!profile) return null;
 
-  const items = navigationItems[user.role] || [];
-  const isActive = (path: string) => currentPath === path;
+  const items = navigationItems[profile.role] || [];
   const getNavClass = ({ isActive }: { isActive: boolean }) =>
     isActive ? 'bg-blue-600/20 text-blue-400 border-r-2 border-blue-400' : 'hover:bg-gray-800/50 text-gray-300 hover:text-white';
 
   const isCollapsed = state === 'collapsed';
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const formatRole = (role: string) => {
+    return role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
 
   return (
     <Sidebar className={isCollapsed ? 'w-16' : 'w-64'} collapsible="icon">
@@ -102,30 +112,21 @@ export function AppSidebar() {
                 <div className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-800/50 transition-colors">
                   <Avatar className="h-10 w-10 bg-blue-600">
                     <AvatarFallback className="bg-blue-600 text-white">
-                      {user.avatar}
+                      {getInitials(profile.full_name)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 text-left">
-                    <p className="text-sm font-medium text-white">{user.name}</p>
-                    <p className="text-xs text-gray-400 capitalize">
-                      {user.role.replace('_', ' ')}
+                    <p className="text-sm font-medium text-white">{profile.full_name}</p>
+                    <p className="text-xs text-gray-400">
+                      {formatRole(profile.role)}
                     </p>
                   </div>
                   <ChevronDown className="h-4 w-4 text-gray-400" />
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-56 bg-gray-800 border-gray-700">
-                <DropdownMenuItem onClick={() => switchRole('production_manager')}>
-                  Switch to Production Manager
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => switchRole('machine_operator')}>
-                  Switch to Machine Operator
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => switchRole('admin_executive')}>
-                  Switch to Admin Executive
-                </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-gray-700" />
-                <DropdownMenuItem onClick={logout} className="text-red-400">
+                <DropdownMenuItem onClick={signOut} className="text-red-400">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign Out
                 </DropdownMenuItem>

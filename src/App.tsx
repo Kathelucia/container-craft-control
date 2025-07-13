@@ -1,10 +1,11 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { AuthPage } from "@/components/auth/AuthPage";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProductionManagerDashboard } from "@/components/dashboard/ProductionManagerDashboard";
 import { MachineOperatorDashboard } from "@/components/dashboard/MachineOperatorDashboard";
@@ -21,16 +22,16 @@ import { Loader2 } from "lucide-react";
 const queryClient = new QueryClient();
 
 function DashboardRouter() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   
-  if (!user) return null;
+  if (!profile) return null;
 
-  switch (user.role) {
+  switch (profile.role) {
     case 'production_manager':
       return <ProductionManagerDashboard />;
     case 'machine_operator':
       return <MachineOperatorDashboard />;
-    case 'admin_executive':
+    case 'operations_admin':
       return <AdminExecutiveDashboard />;
     default:
       return <ProductionManagerDashboard />;
@@ -49,7 +50,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
   
   if (!isAuthenticated) {
-    return <LoginForm />;
+    return <AuthPage />;
   }
   
   return <AppLayout>{children}</AppLayout>;
@@ -63,6 +64,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/auth" element={<AuthPage />} />
             <Route
               path="/"
               element={

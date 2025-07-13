@@ -1,111 +1,141 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, AuthState } from '@/types/auth';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Profile {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'production_manager' | 'machine_operator' | 'operations_admin';
+  department?: string;  
+  shift?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface AuthState {
+  user: User | null;
+  profile: Profile | null;
+  session: Session | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
-  logout: () => void;
-  switchRole: (role: User['role']) => void;
+  signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demo
-const mockUsers: Record<string, User> = {
-  'manager@betaflow.com': {
-    id: '1',
-    email: 'manager@betaflow.com',
-    role: 'production_manager',
-    name: 'Sarah Johnson',
-    avatar: 'SJ',
-    permissions: ['production.read', 'production.write', 'machines.read', 'reports.read']
-  },
-  'operator@betaflow.com': {
-    id: '2',
-    email: 'operator@betaflow.com',
-    role: 'machine_operator',
-    name: 'Mike Rodriguez',
-    avatar: 'MR',
-    permissions: ['batches.write', 'defects.write', 'machines.status']
-  },
-  'admin@betaflow.com': {
-    id: '3',
-    email: 'admin@betaflow.com',
-    role: 'admin_executive',
-    name: 'Lisa Chen',
-    avatar: 'LC',
-    permissions: ['orders.read', 'inventory.read', 'reports.export', 'users.manage']
-  }
-};
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
+    profile: null,
+    session: null,
     isAuthenticated: false,
     isLoading: true
   });
 
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+
+      return data;
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+  };
+
+  const refreshProfile = async () => {
+    if (authState.user) {
+      const profile = await fetchProfile(authState.user.id);
+      setAuthState(prev => ({ ...prev, profile }));
+    }
+  };
+
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem('betaflow_user');
-    if (storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchProfile(session.user.id).then(profile => {
+          setAuthState({
+            user: session.user,
+            profile,
+            session,
+            isAuthenticated: true,
+            isLoading: false
+          });
+        });
+      } else {
         setAuthState({
-          user,
-          isAuthenticated: true,
+          user: null,
+          profile: null,
+          session: null,
+          isAuthenticated: false,
           isLoading: false
         });
-      } catch {
-        localStorage.removeItem('betaflow_user');
-        setAuthState({ user: null, isAuthenticated: false, isLoading: false });
       }
-    } else {
-      setAuthState({ user: null, isAuthenticated: false, isLoading: false });
-    }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.user) {
+          const profile = await fetchProfile(session.user.id);
+          setAuthState({
+            user: session.user,
+            profile,
+            session,
+            isAuthenticated: true,
+            isLoading: false
+          });
+        } else {
+          setAuthState({
+            user: null,
+            profile: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication
-    const user = mockUsers[email];
-    if (user && password === 'demo123') {
-      localStorage.setItem('betaflow_user', JSON.stringify(user));
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
       setAuthState({
-        user,
-        isAuthenticated: true,
+        user: null,
+        profile: null,
+        session: null,
+        isAuthenticated: false,
         isLoading: false
       });
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    localStorage.removeItem('betaflow_user');
-    setAuthState({
-      user: null,
-      isAuthenticated: false,
-      isLoading: false
-    });
-  };
-
-  const switchRole = (role: User['role']) => {
-    if (authState.user) {
-      const updatedUser = { ...authState.user, role };
-      localStorage.setItem('betaflow_user', JSON.stringify(updatedUser));
-      setAuthState(prev => ({
-        ...prev,
-        user: updatedUser
-      }));
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
   return (
     <AuthContext.Provider value={{
       ...authState,
-      login,
-      logout,
-      switchRole
+      signOut,
+      refreshProfile
     }}>
       {children}
     </AuthContext.Provider>
