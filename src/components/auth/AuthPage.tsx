@@ -46,8 +46,8 @@ export function AuthPage() {
             data: {
               full_name: fullName,
               role: role,
-              department: department,
-              shift: shift,
+              department: department || null,
+              shift: shift || null,
             }
           }
         });
