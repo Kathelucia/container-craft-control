@@ -24,7 +24,6 @@ interface AuthState {
 
 interface AuthContextType extends AuthState {
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string, userData: any) => Promise<{ error: any }>;
 }
@@ -39,33 +38,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAuthenticated: false,
     isLoading: true
   });
-
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return null;
-      }
-
-      return data;
-    } catch (error) {
-      console.error('Error fetching profile:', error);
-      return null;
-    }
-  };
-
-  const refreshProfile = async () => {
-    if (authState.user) {
-      const profile = await fetchProfile(authState.user.id);
-      setAuthState(prev => ({ ...prev, profile }));
-    }
-  };
 
   const signIn = async (email: string, password: string) => {
     try {
@@ -97,72 +69,76 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
   useEffect(() => {
     let mounted = true;
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!mounted) return;
-
-        if (session?.user) {
-          // User is authenticated, fetch profile
-          const profile = await fetchProfile(session.user.id);
-          if (mounted) {
-            setAuthState({
-              user: session.user,
-              profile,
-              session,
-              isAuthenticated: true,
-              isLoading: false
-            });
-          }
-        } else {
-          // User is not authenticated
-          if (mounted) {
-            setAuthState({
-              user: null,
-              profile: null,
-              session: null,
-              isAuthenticated: false,
-              isLoading: false
-            });
-          }
-        }
-      }
-    );
-
-    // Get initial session
-    const initializeAuth = async () => {
+    
+    // Get initial session immediately
+    const getInitialSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (!mounted) return;
-
+        
         if (session?.user) {
-          const profile = await fetchProfile(session.user.id);
-          if (mounted) {
-            setAuthState({
-              user: session.user,
-              profile,
-              session,
-              isAuthenticated: true,
-              isLoading: false
-            });
-          }
+          // Fetch profile in background
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (mounted) {
+                setAuthState({
+                  user: session.user,
+                  profile,
+                  session,
+                  isAuthenticated: true,
+                  isLoading: false
+                });
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+              if (mounted) {
+                setAuthState({
+                  user: session.user,
+                  profile: null,
+                  session,
+                  isAuthenticated: true,
+                  isLoading: false
+                });
+              }
+            }
+          }, 0);
+          
+          // Set authenticated state immediately
+          setAuthState({
+            user: session.user,
+            profile: null,
+            session,
+            isAuthenticated: true,
+            isLoading: false
+          });
         } else {
-          if (mounted) {
-            setAuthState({
-              user: null,
-              profile: null,
-              session: null,
-              isAuthenticated: false,
-              isLoading: false
-            });
-          }
+          setAuthState({
+            user: null,
+            profile: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
         }
       } catch (error) {
-        console.error('Error getting initial session:', error);
+        console.error('Error getting session:', error);
         if (mounted) {
           setAuthState({
             user: null,
@@ -175,7 +151,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    initializeAuth();
+    // Set up auth listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        if (session?.user) {
+          // Set authenticated immediately, fetch profile in background
+          setAuthState(prev => ({
+            ...prev,
+            user: session.user,
+            session,
+            isAuthenticated: true,
+            isLoading: false
+          }));
+          
+          // Fetch profile async
+          setTimeout(async () => {
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+              
+              if (mounted) {
+                setAuthState(prev => ({ ...prev, profile }));
+              }
+            } catch (error) {
+              console.error('Error fetching profile:', error);
+            }
+          }, 0);
+        } else {
+          setAuthState({
+            user: null,
+            profile: null,
+            session: null,
+            isAuthenticated: false,
+            isLoading: false
+          });
+        }
+      }
+    );
+
+    getInitialSession();
 
     return () => {
       mounted = false;
@@ -183,26 +202,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const signOut = async () => {
-    try {
-      await supabase.auth.signOut();
-      setAuthState({
-        user: null,
-        profile: null,
-        session: null,
-        isAuthenticated: false,
-        isLoading: false
-      });
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
-
   return (
     <AuthContext.Provider value={{
       ...authState,
       signOut,
-      refreshProfile,
       signIn,
       signUp
     }}>

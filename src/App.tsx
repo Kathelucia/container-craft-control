@@ -17,13 +17,15 @@ import { InventoryManagement } from "@/components/inventory/InventoryManagement"
 import { EmployeeManagement } from "@/components/employees/EmployeeManagement";
 import { Analytics } from "@/components/analytics/Analytics";
 import { Reports } from "@/components/reports/Reports";
-import { Loader2 } from "lucide-react";
+import { Factory } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 10, // 10 minutes (replaces cacheTime)
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 10,
+      retry: 1,
+      refetchOnWindowFocus: false,
     },
   },
 });
@@ -31,9 +33,10 @@ const queryClient = new QueryClient({
 function DashboardRouter() {
   const { profile } = useAuth();
   
-  if (!profile) return null;
+  // Default to production manager dashboard if no profile yet
+  const role = profile?.role || 'production_manager';
 
-  switch (profile.role) {
+  switch (role) {
     case 'production_manager':
       return <ProductionManagerDashboard />;
     case 'machine_operator':
@@ -45,22 +48,26 @@ function DashboardRouter() {
   }
 }
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-900">
+      <div className="text-center">
+        <div className="flex items-center justify-center space-x-2 mb-4">
+          <Factory className="h-8 w-8 text-blue-400 animate-pulse" />
+          <h2 className="text-xl font-semibold text-white">BetaFlow</h2>
+        </div>
+        <p className="text-gray-400">Manufacturing Management System</p>
+        <div className="mt-4 w-16 h-1 bg-blue-600 rounded mx-auto animate-pulse"></div>
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-400 mx-auto mb-4" />
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white">BetaFlow</h2>
-            <p className="text-gray-400">Manufacturing Management System</p>
-            <p className="text-sm text-gray-500">Loading your workspace...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
   
   if (!isAuthenticated) {
