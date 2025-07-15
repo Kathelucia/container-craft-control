@@ -18,6 +18,7 @@ import { EmployeeManagement } from "@/components/employees/EmployeeManagement";
 import { Analytics } from "@/components/analytics/Analytics";
 import { Reports } from "@/components/reports/Reports";
 import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient();
 
@@ -40,16 +41,32 @@ function DashboardRouter() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
+  const [forceShowAuth, setForceShowAuth] = useState(false);
   
-  if (isLoading) {
+  // Fallback timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (isLoading) {
+        console.log('Loading timeout reached, forcing auth page');
+        setForceShowAuth(true);
+      }
+    }, 10000); // 10 second timeout
+
+    return () => clearTimeout(timeout);
+  }, [isLoading]);
+  
+  if (isLoading && !forceShowAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-400 mx-auto mb-4" />
+          <p className="text-gray-400">Loading BetaFlow...</p>
+        </div>
       </div>
     );
   }
   
-  if (!isAuthenticated) {
+  if (!isAuthenticated || forceShowAuth) {
     return <AuthPage />;
   }
   

@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
+      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -53,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
+      console.log('Profile fetched successfully:', data);
       return data;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -69,18 +71,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
+      console.log('Attempting sign in for:', email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+      console.log('Sign in result:', { error });
       return { error };
     } catch (error) {
+      console.error('Sign in error:', error);
       return { error };
     }
   };
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
+      console.log('Attempting sign up for:', email, 'with userData:', userData);
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -89,26 +95,84 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: userData
         }
       });
+      console.log('Sign up result:', { error });
       return { error };
     } catch (error) {
+      console.error('Sign up error:', error);
       return { error };
     }
   };
 
   useEffect(() => {
-    // Set up auth state listener first
+    let mounted = true;
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state change:', event, session?.user?.id);
+        
+        if (!mounted) return;
+
+        if (session?.user) {
+          // User is authenticated, fetch profile
+          const profile = await fetchProfile(session.user.id);
+          if (mounted) {
+            setAuthState({
+              user: session.user,
+              profile,
+              session,
+              isAuthenticated: true,
+              isLoading: false
+            });
+          }
+        } else {
+          // User is not authenticated
+          if (mounted) {
+            setAuthState({
+              user: null,
+              profile: null,
+              session: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+        }
+      }
+    );
+
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log('Initial session check:', session?.user?.id, error);
+        
+        if (!mounted) return;
+
         if (session?.user) {
           const profile = await fetchProfile(session.user.id);
-          setAuthState({
-            user: session.user,
-            profile,
-            session,
-            isAuthenticated: true,
-            isLoading: false
-          });
+          if (mounted) {
+            setAuthState({
+              user: session.user,
+              profile,
+              session,
+              isAuthenticated: true,
+              isLoading: false
+            });
+          }
         } else {
+          if (mounted) {
+            setAuthState({
+              user: null,
+              profile: null,
+              session: null,
+              isAuthenticated: false,
+              isLoading: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error getting initial session:', error);
+        if (mounted) {
           setAuthState({
             user: null,
             profile: null,
@@ -118,36 +182,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       }
-    );
+    };
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchProfile(session.user.id).then(profile => {
-          setAuthState({
-            user: session.user,
-            profile,
-            session,
-            isAuthenticated: true,
-            isLoading: false
-          });
-        });
-      } else {
-        setAuthState({
-          user: null,
-          profile: null,
-          session: null,
-          isAuthenticated: false,
-          isLoading: false
-        });
-      }
-    });
+    initializeAuth();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {
     try {
+      console.log('Signing out...');
       await supabase.auth.signOut();
       setAuthState({
         user: null,
