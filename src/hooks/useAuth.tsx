@@ -42,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      console.log('Fetching profile for user:', userId);
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
@@ -54,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return null;
       }
 
-      console.log('Profile fetched successfully:', data);
       return data;
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -71,12 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = async (email: string, password: string) => {
     try {
-      console.log('Attempting sign in for:', email);
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-      console.log('Sign in result:', { error });
       return { error };
     } catch (error) {
       console.error('Sign in error:', error);
@@ -86,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, userData: any) => {
     try {
-      console.log('Attempting sign up for:', email, 'with userData:', userData);
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -95,7 +90,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           data: userData
         }
       });
-      console.log('Sign up result:', { error });
       return { error };
     } catch (error) {
       console.error('Sign up error:', error);
@@ -109,8 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state change:', event, session?.user?.id);
-        
         if (!mounted) return;
 
         if (session?.user) {
@@ -144,7 +136,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initializeAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log('Initial session check:', session?.user?.id, error);
         
         if (!mounted) return;
 
@@ -194,7 +185,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log('Signing out...');
       await supabase.auth.signOut();
       setAuthState({
         user: null,

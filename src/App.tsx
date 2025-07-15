@@ -18,9 +18,15 @@ import { EmployeeManagement } from "@/components/employees/EmployeeManagement";
 import { Analytics } from "@/components/analytics/Analytics";
 import { Reports } from "@/components/reports/Reports";
 import { Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 10, // 10 minutes
+    },
+  },
+});
 
 function DashboardRouter() {
   const { profile } = useAuth();
@@ -41,32 +47,23 @@ function DashboardRouter() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
-  const [forceShowAuth, setForceShowAuth] = useState(false);
   
-  // Fallback timeout to prevent infinite loading
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      if (isLoading) {
-        console.log('Loading timeout reached, forcing auth page');
-        setForceShowAuth(true);
-      }
-    }, 10000); // 10 second timeout
-
-    return () => clearTimeout(timeout);
-  }, [isLoading]);
-  
-  if (isLoading && !forceShowAuth) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-blue-400 mx-auto mb-4" />
-          <p className="text-gray-400">Loading BetaFlow...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-blue-400 mx-auto mb-4" />
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-white">BetaFlow</h2>
+            <p className="text-gray-400">Manufacturing Management System</p>
+            <p className="text-sm text-gray-500">Loading your workspace...</p>
+          </div>
         </div>
       </div>
     );
   }
   
-  if (!isAuthenticated || forceShowAuth) {
+  if (!isAuthenticated) {
     return <AuthPage />;
   }
   
@@ -142,7 +139,12 @@ const App = () => (
               path="/quality"
               element={
                 <ProtectedRoute>
-                  <div className="text-white">Quality Control - Coming Soon</div>
+                  <div className="p-6">
+                    <div className="text-center">
+                      <h1 className="text-2xl font-bold text-white mb-2">Quality Control</h1>
+                      <p className="text-gray-400">Advanced quality management features coming soon</p>
+                    </div>
+                  </div>
                 </ProtectedRoute>
               }
             />

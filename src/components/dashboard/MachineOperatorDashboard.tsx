@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { WelcomeHeader } from '@/components/welcome/WelcomeHeader';
 import {
   Play,
   Square,
@@ -46,15 +46,11 @@ const myTasks = [
 export function MachineOperatorDashboard() {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Operator Dashboard</h1>
-        <p className="text-gray-400">Manage your assigned batches and monitor production progress</p>
-      </div>
+      <WelcomeHeader />
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-blue-600/20 to-blue-700/20 border-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Active Batches</CardTitle>
             <Package className="h-4 w-4 text-blue-400" />
@@ -65,7 +61,7 @@ export function MachineOperatorDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-green-600/20 to-green-700/20 border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Today's Target</CardTitle>
             <Target className="h-4 w-4 text-green-400" />
@@ -76,10 +72,10 @@ export function MachineOperatorDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-emerald-600/20 to-emerald-700/20 border-emerald-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Quality Score</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-400" />
+            <CheckCircle className="h-4 w-4 text-emerald-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-white">98.5%</div>
@@ -87,7 +83,7 @@ export function MachineOperatorDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-yellow-600/20 to-yellow-700/20 border-yellow-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Pending Tasks</CardTitle>
             <Clock className="h-4 w-4 text-yellow-400" />

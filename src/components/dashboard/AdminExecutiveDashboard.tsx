@@ -1,19 +1,17 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { WelcomeHeader } from '@/components/welcome/WelcomeHeader';
 import {
-  BarChart,
-  Bar,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area
+  BarChart,
+  Bar
 } from 'recharts';
 import {
   DollarSign,
@@ -23,8 +21,6 @@ import {
   Users,
   FileText,
   AlertCircle,
-  CheckCircle,
-  Clock,
   Download
 } from 'lucide-react';
 
@@ -52,15 +48,11 @@ const recentOrders = [
 export function AdminExecutiveDashboard() {
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Executive Dashboard</h1>
-        <p className="text-gray-400">Business insights, sales performance, and operational overview</p>
-      </div>
+      <WelcomeHeader />
 
       {/* Key Business Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-green-600/20 to-green-700/20 border-green-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Monthly Revenue</CardTitle>
             <DollarSign className="h-4 w-4 text-green-400" />
@@ -75,7 +67,7 @@ export function AdminExecutiveDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-blue-600/20 to-blue-700/20 border-blue-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Active Orders</CardTitle>
             <ShoppingCart className="h-4 w-4 text-blue-400" />
@@ -86,7 +78,7 @@ export function AdminExecutiveDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-purple-600/20 to-purple-700/20 border-purple-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Inventory Items</CardTitle>
             <Package className="h-4 w-4 text-purple-400" />
@@ -97,7 +89,7 @@ export function AdminExecutiveDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="metric-card">
+        <Card className="metric-card bg-gradient-to-br from-orange-600/20 to-orange-700/20 border-orange-500/20">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-400">Active Employees</CardTitle>
             <Users className="h-4 w-4 text-orange-400" />
