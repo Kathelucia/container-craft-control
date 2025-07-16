@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { BulkUploadButton } from '@/components/upload/BulkUploadButton';
 import {
   Package,
   Plus,
@@ -278,6 +278,7 @@ export function InventoryManagement() {
           <p className="text-gray-400">Manage raw materials and track stock levels</p>
         </div>
         <div className="flex space-x-2">
+          <BulkUploadButton />
           <Dialog open={isMovementDialogOpen} onOpenChange={setIsMovementDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="border-green-500 text-green-400 hover:bg-green-500/10">
