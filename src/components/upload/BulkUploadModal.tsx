@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import type { Database } from '@/integrations/supabase/types';
 import {
   Upload,
   Download,
@@ -33,6 +34,16 @@ interface UploadResult {
   failed: number;
   errors: string[];
 }
+
+type TableName = keyof Database['public']['Tables'];
+
+// Map upload types to actual table names
+const TABLE_MAPPING: Record<string, TableName> = {
+  'raw-materials': 'raw_materials',
+  'products': 'products',
+  'employees': 'profiles',
+  'machines': 'machines'
+} as const;
 
 export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
   const [activeTab, setActiveTab] = useState('raw-materials');
@@ -148,7 +159,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
     return errors;
   };
 
-  const uploadData = async (data: any[], table: string): Promise<UploadResult> => {
+  const uploadData = async (data: any[], tableName: TableName): Promise<UploadResult> => {
     const result: UploadResult = { success: 0, failed: 0, errors: [] };
     
     for (let i = 0; i < data.length; i++) {
@@ -158,20 +169,20 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
         let processedData = { ...data[i] };
         
         // Process data based on table type
-        if (table === 'raw_materials') {
+        if (tableName === 'raw_materials') {
           processedData.current_stock = parseFloat(processedData.current_stock) || 0;
           processedData.minimum_stock = parseFloat(processedData.minimum_stock) || 0;
           if (processedData.unit_cost) {
             processedData.unit_cost = parseFloat(processedData.unit_cost) || null;
           }
-        } else if (table === 'products') {
+        } else if (tableName === 'products') {
           if (processedData.unit_price) {
             processedData.unit_price = parseFloat(processedData.unit_price) || null;
           }
           if (processedData.production_time_minutes) {
             processedData.production_time_minutes = parseInt(processedData.production_time_minutes) || null;
           }
-        } else if (table === 'machines') {
+        } else if (tableName === 'machines') {
           if (processedData.specifications) {
             try {
               processedData.specifications = JSON.parse(processedData.specifications);
@@ -182,7 +193,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
         }
 
         const { error } = await supabase
-          .from(table)
+          .from(tableName)
           .insert(processedData);
 
         if (error) {
@@ -221,7 +232,14 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
         return;
       }
 
-      const uploadResult = await uploadData(data, activeTab.replace('-', '_'));
+      const tableName = TABLE_MAPPING[activeTab];
+      if (!tableName) {
+        setResult({ success: 0, failed: data.length, errors: ['Invalid upload type'] });
+        setUploading(false);
+        return;
+      }
+
+      const uploadResult = await uploadData(data, tableName);
       setResult(uploadResult);
 
       if (uploadResult.success > 0) {
