@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { NewBatchModal } from './NewBatchModal';
 import {
   Play,
   Pause,
@@ -41,6 +41,7 @@ export function ProductionWorkflow() {
   const { user } = useAuth();
   const [batches, setBatches] = useState<ProductionBatch[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showNewBatchModal, setShowNewBatchModal] = useState(false);
 
   useEffect(() => {
     fetchBatches();
@@ -102,6 +103,11 @@ export function ProductionWorkflow() {
     }
   };
 
+  const handleNewBatchCreated = () => {
+    fetchBatches(); // Refresh the list
+    setShowNewBatchModal(false);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -118,7 +124,10 @@ export function ProductionWorkflow() {
           <h1 className="text-3xl font-bold text-white mb-2">Production Workflow</h1>
           <p className="text-gray-400">Manage and monitor production batches in real-time</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button 
+          onClick={() => setShowNewBatchModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 hover-scale"
+        >
           <Plus className="h-4 w-4 mr-2" />
           New Batch
         </Button>
@@ -126,13 +135,13 @@ export function ProductionWorkflow() {
 
       {/* Production Batches */}
       <div className="grid gap-6">
-        {batches.map((batch) => {
+        {batches.map((batch, index) => {
           const progress = batch.produced_quantity && batch.target_quantity 
             ? (batch.produced_quantity / batch.target_quantity) * 100 
             : 0;
 
           return (
-            <Card key={batch.id} className="betaflow-card">
+            <Card key={batch.id} className="betaflow-card animate-fade-in hover-scale" style={{animationDelay: `${index * 100}ms`}}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -252,7 +261,10 @@ export function ProductionWorkflow() {
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">No Production Batches</h3>
               <p className="text-gray-400 mb-4">Get started by creating your first production batch</p>
-              <Button className="bg-blue-600 hover:bg-blue-700">
+              <Button 
+                onClick={() => setShowNewBatchModal(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Create First Batch
               </Button>
@@ -260,6 +272,13 @@ export function ProductionWorkflow() {
           </Card>
         )}
       </div>
+
+      {/* New Batch Modal */}
+      <NewBatchModal
+        isOpen={showNewBatchModal}
+        onClose={() => setShowNewBatchModal(false)}
+        onBatchCreated={handleNewBatchCreated}
+      />
     </div>
   );
 }

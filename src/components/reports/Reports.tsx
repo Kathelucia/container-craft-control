@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -164,6 +163,7 @@ export function Reports() {
   });
   const [reportName, setReportName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [reportFormat, setReportFormat] = useState('pdf');
   const { toast } = useToast();
 
   const categories = [...new Set(reportTemplates.map(template => template.category))];
@@ -172,29 +172,155 @@ export function Reports() {
     ? reportTemplates 
     : reportTemplates.filter(template => template.category === selectedCategory);
 
+  const generateReportFile = (template: ReportTemplate, format: string) => {
+    const reportTitle = reportName || template.name;
+    const currentDate = new Date().toLocaleDateString();
+    
+    if (format === 'csv') {
+      // Generate CSV content
+      const csvContent = `Report Title,${reportTitle}
+Generated Date,${currentDate}
+Report Type,${template.category}
+Period,${dateRange.from ? format(dateRange.from, 'PPP') : 'All Time'} - ${dateRange.to ? format(dateRange.to, 'PPP') : 'Present'}
+
+Sample Data:
+Metric,Value,Status
+Production Output,1285 units,Above Target
+Machine Efficiency,94.2%,Good
+Defect Rate,2.1%,Within Limits
+Active Machines,8 of 11,Operational`;
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportTitle.replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '-')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else if (format === 'pdf') {
+      // For PDF, we'll create a simple HTML content and use browser's print functionality
+      const pdfContent = `
+        <html>
+          <head>
+            <title>${reportTitle}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              .header { border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+              .title { font-size: 24px; font-weight: bold; color: #333; }
+              .meta { color: #666; margin-top: 10px; }
+              .section { margin: 20px 0; }
+              .metric { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+              .footer { margin-top: 40px; text-align: center; color: #666; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="title">${reportTitle}</div>
+              <div class="meta">
+                Generated: ${currentDate} | Type: ${template.category} | 
+                Period: ${dateRange.from ? format(dateRange.from, 'PPP') : 'All Time'} - ${dateRange.to ? format(dateRange.to, 'PPP') : 'Present'}
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>Executive Summary</h3>
+              <p>${template.description}</p>
+            </div>
+            
+            <div class="section">
+              <h3>Key Metrics</h3>
+              <div class="metric"><span>Production Output:</span><span>1,285 units (↑12.5%)</span></div>
+              <div class="metric"><span>Overall Efficiency:</span><span>94.2%</span></div>
+              <div class="metric"><span>Active Machines:</span><span>8 of 11</span></div>
+              <div class="metric"><span>Defect Rate:</span><span>2.1% (↓0.3%)</span></div>
+            </div>
+            
+            <div class="footer">
+              <p>BetaFlow Manufacturing Management System | Report ID: ${Math.random().toString(36).substr(2, 9).toUpperCase()}</p>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(pdfContent);
+        printWindow.document.close();
+        setTimeout(() => {
+          printWindow.print();
+          printWindow.close();
+        }, 500);
+      }
+    } else {
+      // Excel format
+      const excelContent = `Report Title\t${reportTitle}
+Generated Date\t${currentDate}
+Report Type\t${template.category}
+Period\t${dateRange.from ? format(dateRange.from, 'PPP') : 'All Time'} - ${dateRange.to ? format(dateRange.to, 'PPP') : 'Present'}
+
+Metric\tValue\tStatus
+Production Output\t1285 units\tAbove Target
+Machine Efficiency\t94.2%\tGood
+Defect Rate\t2.1%\tWithin Limits
+Active Machines\t8 of 11\tOperational`;
+
+      const blob = new Blob([excelContent], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${reportTitle.replace(/\s+/g, '_')}_${currentDate.replace(/\//g, '-')}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   const generateReport = async () => {
     if (!selectedTemplate) return;
 
     setIsGenerating(true);
     
-    // Simulate report generation
+    // Simulate report generation with progress
     setTimeout(() => {
+      generateReportFile(selectedTemplate, reportFormat);
       toast({
         title: 'Report Generated Successfully',
-        description: `${reportName || selectedTemplate.name} has been generated and is ready for download.`
+        description: `${reportName || selectedTemplate.name} has been generated and downloaded.`
       });
       setIsGenerating(false);
       setSelectedTemplate(null);
       setReportName('');
       setDateRange({ from: undefined, to: undefined });
-    }, 3000);
+    }, 2000);
   };
 
   const downloadReport = (reportId: string) => {
-    toast({
-      title: 'Download Started',
-      description: 'Report download has started successfully.'
-    });
+    const report = recentReports.find(r => r.id === reportId);
+    if (report) {
+      // Simulate downloading existing report
+      const template = reportTemplates.find(t => t.name === report.type.replace(' Report', ''));
+      if (template) {
+        generateReportFile({ ...template, name: report.name }, 'pdf');
+        toast({
+          title: 'Download Started',
+          description: `${report.name} download has started successfully.`
+        });
+      }
+    }
+  };
+
+  const previewReport = (reportId: string) => {
+    const report = recentReports.find(r => r.id === reportId);
+    if (report) {
+      toast({
+        title: 'Report Preview',
+        description: `Opening preview for ${report.name}...`
+      });
+      // In a real app, this would open a modal or new page with report preview
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -384,6 +510,7 @@ export function Reports() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => previewReport(report.id)}
                     className="text-blue-400 border-blue-400 hover:bg-blue-400/10"
                   >
                     <Eye className="h-4 w-4 mr-1" />
@@ -406,8 +533,8 @@ export function Reports() {
 
       {/* Report Generation Modal */}
       {selectedTemplate && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <Card className="bg-gray-900 border-gray-700 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fade-in">
+          <Card className="bg-gray-900 border-gray-700 w-full max-w-md animate-scale-in">
             <CardHeader>
               <CardTitle className="text-white flex items-center">
                 {selectedTemplate.icon}
@@ -481,7 +608,7 @@ export function Reports() {
 
               <div>
                 <Label className="text-gray-300">Format</Label>
-                <Select defaultValue="pdf">
+                <Select value={reportFormat} onValueChange={setReportFormat}>
                   <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                     <SelectValue />
                   </SelectTrigger>
