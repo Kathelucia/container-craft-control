@@ -25,31 +25,38 @@ import {
   Package,
   Activity
 } from 'lucide-react';
+import manufacturingHero from '@/assets/manufacturing-hero.jpg';
 
 const productionData = [
-  { day: 'Mon', planned: 1200, actual: 1150, efficiency: 95.8 },
-  { day: 'Tue', planned: 1200, actual: 1280, efficiency: 106.7 },
-  { day: 'Wed', planned: 1200, actual: 1100, efficiency: 91.7 },
-  { day: 'Thu', planned: 1200, actual: 1320, efficiency: 110.0 },
-  { day: 'Fri', planned: 1200, actual: 1190, efficiency: 99.2 },
+  { day: 'Mon', planned: 2400, actual: 2280, efficiency: 95.0 },
+  { day: 'Tue', planned: 2400, actual: 2520, efficiency: 105.0 },
+  { day: 'Wed', planned: 2400, actual: 2165, efficiency: 90.2 },
+  { day: 'Thu', planned: 2400, actual: 2650, efficiency: 110.4 },
+  { day: 'Fri', planned: 2400, actual: 2385, efficiency: 99.4 },
 ];
 
 const machineStatusData = [
-  { name: 'Running', value: 8, color: '#22c55e' },
-  { name: 'Idle', value: 2, color: '#f59e0b' },
-  { name: 'Maintenance', value: 1, color: '#ef4444' },
+  { name: 'Running', value: 14, color: '#22c55e' },
+  { name: 'Idle', value: 3, color: '#f59e0b' },
+  { name: 'Maintenance', value: 2, color: '#ef4444' },
 ];
 
 const recentAlerts = [
-  { id: 1, machine: 'Injection Molding #3', issue: 'Temperature threshold exceeded', severity: 'high', time: '2 min ago' },
-  { id: 2, machine: 'Extrusion Line #1', issue: 'Low material level', severity: 'medium', time: '15 min ago' },
-  { id: 3, machine: 'Quality Station #2', issue: 'Defect rate above normal', severity: 'high', time: '32 min ago' },
+  { id: 1, machine: 'Injection Molding Line #7', issue: 'Temperature variance detected', severity: 'high', time: '4 min ago' },
+  { id: 2, machine: 'Extrusion Unit #3', issue: 'Material feed rate fluctuation', severity: 'medium', time: '12 min ago' },
+  { id: 3, machine: 'Quality Control Station #1', issue: 'Dimensional tolerance exceeded', severity: 'high', time: '28 min ago' },
 ];
 
 export function ProductionManagerDashboard() {
   return (
-    <div className="space-y-6">
-      <WelcomeHeader />
+    <div className="relative min-h-screen">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-8"
+        style={{ backgroundImage: `url(${manufacturingHero})` }}
+      />
+      <div className="relative z-10 space-y-6">
+        <WelcomeHeader />
 
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -59,10 +66,10 @@ export function ProductionManagerDashboard() {
             <Factory className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">1,285</div>
+            <div className="text-2xl font-bold text-white animate-fade-in">2,485</div>
             <div className="flex items-center text-sm">
               <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-              <span className="text-green-400">+12.5%</span>
+              <span className="text-green-400">+15.8%</span>
               <span className="text-gray-400 ml-1">vs target</span>
             </div>
           </CardContent>
@@ -74,8 +81,8 @@ export function ProductionManagerDashboard() {
             <Activity className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">94.2%</div>
-            <Progress value={94.2} className="mt-2" />
+            <div className="text-2xl font-bold text-white animate-fade-in">96.8%</div>
+            <Progress value={96.8} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -85,8 +92,8 @@ export function ProductionManagerDashboard() {
             <CheckCircle className="h-4 w-4 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">8/11</div>
-            <div className="text-sm text-gray-400">3 in maintenance</div>
+            <div className="text-2xl font-bold text-white animate-fade-in">14/19</div>
+            <div className="text-sm text-gray-400">5 scheduled maintenance</div>
           </CardContent>
         </Card>
 
@@ -96,10 +103,10 @@ export function ProductionManagerDashboard() {
             <Package className="h-4 w-4 text-yellow-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">2.1%</div>
+            <div className="text-2xl font-bold text-white animate-fade-in">1.8%</div>
             <div className="flex items-center text-sm">
               <TrendingDown className="h-4 w-4 text-green-400 mr-1" />
-              <span className="text-green-400">-0.3%</span>
+              <span className="text-green-400">-0.4%</span>
               <span className="text-gray-400 ml-1">from yesterday</span>
             </div>
           </CardContent>
@@ -212,7 +219,8 @@ export function ProductionManagerDashboard() {
             ))}
           </div>
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

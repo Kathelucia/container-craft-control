@@ -16,31 +16,31 @@ import {
 
 const activeBatches = [
   { 
-    id: 'B2024-001', 
-    product: '500ml Water Bottle', 
-    quantity: 1000, 
-    completed: 750, 
+    id: 'B2024-0158', 
+    product: '500ml Premium Water Bottle', 
+    quantity: 2400, 
+    completed: 1875, 
     status: 'running',
-    machine: 'Injection Molding #2',
-    startTime: '08:30 AM',
-    estimatedCompletion: '02:15 PM'
+    machine: 'Injection Molding Line #4',
+    startTime: '06:45 AM',
+    estimatedCompletion: '02:30 PM'
   },
   { 
-    id: 'B2024-002', 
-    product: '1L Storage Container', 
-    quantity: 500, 
-    completed: 125, 
+    id: 'B2024-0159', 
+    product: '1L Food Storage Container', 
+    quantity: 1200, 
+    completed: 385, 
     status: 'running',
-    machine: 'Blow Molding #1',
-    startTime: '10:00 AM',
-    estimatedCompletion: '04:30 PM'
+    machine: 'Blow Molding Unit #2',
+    startTime: '08:15 AM',
+    estimatedCompletion: '04:45 PM'
   },
 ];
 
 const myTasks = [
-  { id: 1, task: 'Quality check for Batch B2024-001', priority: 'high', dueTime: '01:00 PM' },
-  { id: 2, task: 'Machine calibration - Line #3', priority: 'medium', dueTime: '03:30 PM' },
-  { id: 3, task: 'Material refill - Station A', priority: 'low', dueTime: '05:00 PM' },
+  { id: 1, task: 'Quality inspection for Batch B2024-0158', priority: 'high', dueTime: '01:30 PM' },
+  { id: 2, task: 'Machine calibration - Production Line #5', priority: 'medium', dueTime: '03:45 PM' },
+  { id: 3, task: 'Material refill - Raw Material Bay C', priority: 'low', dueTime: '05:15 PM' },
 ];
 
 export function MachineOperatorDashboard() {
@@ -67,8 +67,8 @@ export function MachineOperatorDashboard() {
             <Target className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">1,500</div>
-            <div className="text-sm text-green-400">875 completed (58%)</div>
+            <div className="text-2xl font-bold text-white animate-fade-in">3,600</div>
+            <div className="text-sm text-green-400">2,260 completed (63%)</div>
           </CardContent>
         </Card>
 
@@ -78,7 +78,7 @@ export function MachineOperatorDashboard() {
             <CheckCircle className="h-4 w-4 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">98.5%</div>
+            <div className="text-2xl font-bold text-white animate-fade-in">99.2%</div>
             <div className="text-sm text-gray-400">Last 24 hours</div>
           </CardContent>
         </Card>
