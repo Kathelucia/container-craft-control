@@ -135,11 +135,6 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
     return data;
   };
 
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email.trim());
-  };
-
   const validateData = (data: any[], requiredColumns: string[]): string[] => {
     const errors: string[] = [];
     
@@ -153,18 +148,6 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
     
     if (missingColumns.length > 0) {
       errors.push(`Missing required columns: ${missingColumns.join(', ')}`);
-    }
-
-    // Additional validation for employee data
-    if (activeTab === 'employees') {
-      data.forEach((row, index) => {
-        if (row.email && !isValidEmail(row.email)) {
-          errors.push(`Row ${index + 1}: Invalid email format '${row.email}'`);
-        }
-        if (!row.email || row.email.trim() === '') {
-          errors.push(`Row ${index + 1}: Email is required`);
-        }
-      });
     }
 
     return errors;
