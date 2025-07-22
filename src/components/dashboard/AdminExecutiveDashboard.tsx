@@ -23,39 +23,32 @@ import {
   AlertCircle,
   Download
 } from 'lucide-react';
-import dashboardBg from '@/assets/dashboard-bg.jpg';
 
 const salesData = [
-  { month: 'Jan', revenue: 164000, orders: 420 },
-  { month: 'Feb', revenue: 178000, orders: 465 },
-  { month: 'Mar', revenue: 185000, orders: 480 },
-  { month: 'Apr', revenue: 198000, orders: 520 },
-  { month: 'May', revenue: 215000, orders: 580 },
-  { month: 'Jun', revenue: 245000, orders: 635 },
+  { month: 'Jan', revenue: 45000, orders: 120 },
+  { month: 'Feb', revenue: 52000, orders: 135 },
+  { month: 'Mar', revenue: 48000, orders: 128 },
+  { month: 'Apr', revenue: 61000, orders: 150 },
+  { month: 'May', revenue: 55000, orders: 142 },
+  { month: 'Jun', revenue: 67000, orders: 165 },
 ];
 
 const inventoryAlerts = [
-  { item: 'PET Plastic Granules', level: 2450, minLevel: 5000, status: 'low' },
-  { item: 'HDPE Resin Grade A', level: 850, minLevel: 2000, status: 'critical' },
-  { item: 'Production Labels', level: 15600, minLevel: 8000, status: 'good' },
+  { item: 'PET Plastic Granules', level: 15, minLevel: 20, status: 'low' },
+  { item: 'Blue Colorant', level: 8, minLevel: 10, status: 'critical' },
+  { item: 'Labels - 500ml', level: 2500, minLevel: 1000, status: 'good' },
 ];
 
 const recentOrders = [
-  { id: 'ORD-2024-0548', customer: 'AquaPure Industries', amount: 28750, status: 'processing', date: '2024-01-15' },
-  { id: 'ORD-2024-0549', customer: 'FreshFlow Corp', amount: 19300, status: 'shipped', date: '2024-01-15' },
-  { id: 'ORD-2024-0550', customer: 'CleanBottle Solutions', amount: 34800, status: 'pending', date: '2024-01-16' },
+  { id: 'ORD-2024-0145', customer: 'AquaPure Industries', amount: 12500, status: 'processing', date: '2024-01-15' },
+  { id: 'ORD-2024-0146', customer: 'FreshCorp', amount: 8750, status: 'shipped', date: '2024-01-15' },
+  { id: 'ORD-2024-0147', customer: 'BevMax Solutions', amount: 15200, status: 'pending', date: '2024-01-16' },
 ];
 
 export function AdminExecutiveDashboard() {
   return (
-    <div className="relative min-h-screen">
-      {/* Background Image */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-5"
-        style={{ backgroundImage: `url(${dashboardBg})` }}
-      />
-      <div className="relative z-10 space-y-6">
-        <WelcomeHeader />
+    <div className="space-y-6">
+      <WelcomeHeader />
 
       {/* Key Business Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -65,10 +58,10 @@ export function AdminExecutiveDashboard() {
             <DollarSign className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white animate-fade-in">$245,000</div>
+            <div className="text-2xl font-bold text-white">$67,000</div>
             <div className="flex items-center text-sm">
               <TrendingUp className="h-4 w-4 text-green-400 mr-1" />
-              <span className="text-green-400">+18.2%</span>
+              <span className="text-green-400">+22.8%</span>
               <span className="text-gray-400 ml-1">vs last month</span>
             </div>
           </CardContent>
@@ -80,8 +73,8 @@ export function AdminExecutiveDashboard() {
             <ShoppingCart className="h-4 w-4 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white animate-fade-in">42</div>
-            <div className="text-sm text-gray-400">18 pending, 24 in progress</div>
+            <div className="text-2xl font-bold text-white">28</div>
+            <div className="text-sm text-gray-400">12 pending, 16 in progress</div>
           </CardContent>
         </Card>
 
@@ -91,8 +84,8 @@ export function AdminExecutiveDashboard() {
             <Package className="h-4 w-4 text-purple-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white animate-fade-in">284</div>
-            <div className="text-sm text-red-400">2 critical stock alerts</div>
+            <div className="text-2xl font-bold text-white">156</div>
+            <div className="text-sm text-red-400">2 low stock alerts</div>
           </CardContent>
         </Card>
 
@@ -102,8 +95,8 @@ export function AdminExecutiveDashboard() {
             <Users className="h-4 w-4 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white animate-fade-in">48</div>
-            <div className="text-sm text-gray-400">3 shifts, 16 per shift</div>
+            <div className="text-2xl font-bold text-white">24</div>
+            <div className="text-sm text-gray-400">3 shifts, 8 per shift</div>
           </CardContent>
         </Card>
       </div>
@@ -206,7 +199,7 @@ export function AdminExecutiveDashboard() {
                     <p className="text-sm text-gray-500">{order.date}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold text-white">{order.amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}</p>
+                    <p className="font-semibold text-white">${order.amount.toLocaleString()}</p>
                   </div>
                 </div>
               ))}
@@ -300,8 +293,7 @@ export function AdminExecutiveDashboard() {
             </Button>
           </div>
         </CardContent>
-        </Card>
-      </div>
+      </Card>
     </div>
   );
 }

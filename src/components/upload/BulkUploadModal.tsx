@@ -59,6 +59,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
       title: 'Raw Materials',
       icon: Package,
       description: 'Upload raw materials inventory data',
+      template: 'raw_materials_template.csv',
       requiredColumns: ['name', 'sku', 'unit', 'current_stock', 'minimum_stock']
     },
     {
@@ -66,6 +67,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
       title: 'Products',
       icon: ShoppingCart,
       description: 'Upload product catalog data',
+      template: 'products_template.csv',
       requiredColumns: ['name', 'sku', 'category', 'unit_price']
     },
     {
@@ -73,6 +75,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
       title: 'Employees',
       icon: Users,
       description: 'Upload employee data',
+      template: 'employees_template.csv',
       requiredColumns: ['full_name', 'email', 'role', 'department']
     },
     {
@@ -80,6 +83,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
       title: 'Machines',
       icon: Settings,
       description: 'Upload machine data',
+      template: 'machines_template.csv',
       requiredColumns: ['name', 'type', 'location', 'status']
     }
   ];
@@ -98,18 +102,20 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
     }
   };
 
-  const generateTemplate = (uploadType: string): string => {
-    const headers = uploadTypes.find(type => type.id === uploadType)?.requiredColumns || [];
-    return headers.join(',');
-  };
+  const downloadTemplate = (templateName: string) => {
+    const templates = {
+      'raw_materials_template.csv': 'name,sku,unit,current_stock,minimum_stock,unit_cost,location\nSteel Sheets,STL001,kg,1000,500,25.50,Warehouse A\nPlastic Pellets,PLS001,kg,2000,800,15.25,Warehouse B',
+      'products_template.csv': 'name,sku,category,unit_price,description,production_time_minutes\nContainer A,CNT001,Containers,12.50,Small plastic container,30\nContainer B,CNT002,Containers,18.75,Large plastic container,45',
+      'employees_template.csv': 'full_name,email,role,department,phone,shift\nJohn Doe,john@company.com,machine_operator,Production,+1234567890,Morning\nJane Smith,jane@company.com,production_manager,Production,+1234567891,Day',
+      'machines_template.csv': 'name,type,location,status,specifications\nMachine A,Injection Molding,Floor 1,idle,{"capacity": "1000 units/hour"}\nMachine B,Extrusion,Floor 2,running,{"capacity": "500 units/hour"}'
+    };
 
-  const downloadTemplate = (uploadType: string) => {
-    const content = generateTemplate(uploadType);
+    const content = templates[templateName as keyof typeof templates];
     const blob = new Blob([content], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${uploadType}_template.csv`;
+    a.download = templateName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -308,7 +314,7 @@ export function BulkUploadModal({ isOpen, onClose }: BulkUploadModalProps) {
                   <div className="flex items-center space-x-4">
                     <Button
                       variant="outline"
-                      onClick={() => downloadTemplate(type.id)}
+                      onClick={() => downloadTemplate(type.template)}
                       className="border-green-500 text-green-400 hover:bg-green-500/10"
                     >
                       <Download className="h-4 w-4 mr-2" />
