@@ -14,51 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      batch_assignments: {
-        Row: {
-          assigned_at: string
-          batch_id: string | null
-          completed_at: string | null
-          id: string
-          notes: string | null
-          operator_id: string | null
-          started_at: string | null
-        }
-        Insert: {
-          assigned_at?: string
-          batch_id?: string | null
-          completed_at?: string | null
-          id?: string
-          notes?: string | null
-          operator_id?: string | null
-          started_at?: string | null
-        }
-        Update: {
-          assigned_at?: string
-          batch_id?: string | null
-          completed_at?: string | null
-          id?: string
-          notes?: string | null
-          operator_id?: string | null
-          started_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "batch_assignments_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "production_batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batch_assignments_operator_id_fkey"
-            columns: ["operator_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       customer_orders: {
         Row: {
           created_at: string
@@ -112,63 +67,6 @@ export type Database = {
           {
             foreignKeyName: "customer_orders_created_by_fkey"
             columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      defect_logs: {
-        Row: {
-          batch_id: string | null
-          corrective_action: string | null
-          created_at: string
-          defect_type: string
-          description: string | null
-          id: string
-          image_url: string | null
-          quantity: number
-          reported_by: string | null
-          severity: string | null
-          updated_at: string
-        }
-        Insert: {
-          batch_id?: string | null
-          corrective_action?: string | null
-          created_at?: string
-          defect_type: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          quantity?: number
-          reported_by?: string | null
-          severity?: string | null
-          updated_at?: string
-        }
-        Update: {
-          batch_id?: string | null
-          corrective_action?: string | null
-          created_at?: string
-          defect_type?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          quantity?: number
-          reported_by?: string | null
-          severity?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "defect_logs_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "production_batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "defect_logs_reported_by_fkey"
-            columns: ["reported_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -395,66 +293,6 @@ export type Database = {
           },
         ]
       }
-      production_alerts: {
-        Row: {
-          alert_type: string
-          assigned_to: string | null
-          created_at: string
-          created_by: string | null
-          id: string
-          is_read: boolean | null
-          message: string
-          related_id: string | null
-          related_table: string | null
-          resolved_at: string | null
-          severity: string | null
-          title: string
-        }
-        Insert: {
-          alert_type: string
-          assigned_to?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_read?: boolean | null
-          message: string
-          related_id?: string | null
-          related_table?: string | null
-          resolved_at?: string | null
-          severity?: string | null
-          title: string
-        }
-        Update: {
-          alert_type?: string
-          assigned_to?: string | null
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          is_read?: boolean | null
-          message?: string
-          related_id?: string | null
-          related_table?: string | null
-          resolved_at?: string | null
-          severity?: string | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "production_alerts_assigned_to_fkey"
-            columns: ["assigned_to"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "production_alerts_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       production_batches: {
         Row: {
           actual_end: string | null
@@ -650,39 +488,6 @@ export type Database = {
           supplier_id?: string | null
           unit?: string
           unit_cost?: number | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      shift_schedules: {
-        Row: {
-          created_at: string
-          days_of_week: number[]
-          end_time: string
-          id: string
-          is_active: boolean | null
-          shift_name: string
-          start_time: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          days_of_week?: number[]
-          end_time: string
-          id?: string
-          is_active?: boolean | null
-          shift_name: string
-          start_time: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          days_of_week?: number[]
-          end_time?: string
-          id?: string
-          is_active?: boolean | null
-          shift_name?: string
-          start_time?: string
           updated_at?: string
         }
         Relationships: []

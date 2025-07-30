@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { AuthPage } from "@/components/auth/AuthPage";
 import { AppLayout } from "@/components/layout/AppLayout";
-import ProductionManagerDashboard from "@/components/dashboard/ProductionManagerDashboard";
+import { ProductionManagerDashboard } from "@/components/dashboard/ProductionManagerDashboard";
 import { MachineOperatorDashboard } from "@/components/dashboard/MachineOperatorDashboard";
 import { AdminExecutiveDashboard } from "@/components/dashboard/AdminExecutiveDashboard";
 import { ProductionWorkflow } from "@/components/production/ProductionWorkflow";
