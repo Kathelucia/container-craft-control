@@ -1,52 +1,240 @@
 
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { WelcomeHeader } from '@/components/welcome/WelcomeHeader';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area 
 } from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  Factory,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Package,
-  Activity
+import { 
+  Play, Pause, Square, AlertTriangle, TrendingUp, TrendingDown,
+  Settings, Users, Clock, Target, Factory, Package, Zap, Calendar,
+  Activity, CheckCircle
 } from 'lucide-react';
+import { WelcomeHeader } from '@/components/welcome/WelcomeHeader';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-const productionData = [
-  { day: 'Mon', planned: 1200, actual: 1150, efficiency: 95.8 },
-  { day: 'Tue', planned: 1200, actual: 1280, efficiency: 106.7 },
-  { day: 'Wed', planned: 1200, actual: 1100, efficiency: 91.7 },
-  { day: 'Thu', planned: 1200, actual: 1320, efficiency: 110.0 },
-  { day: 'Fri', planned: 1200, actual: 1190, efficiency: 99.2 },
-];
+interface ProductionBatch {
+  id: string;
+  batch_number: string;
+  products: { name: string; sku: string };
+  machines: { name: string; status: string };
+  target_quantity: number;
+  produced_quantity: number;
+  status: string;
+  scheduled_start: string;
+  actual_start: string;
+  shift: string;
+}
 
-const machineStatusData = [
-  { name: 'Running', value: 8, color: '#22c55e' },
-  { name: 'Idle', value: 2, color: '#f59e0b' },
-  { name: 'Maintenance', value: 1, color: '#ef4444' },
-];
+interface Alert {
+  id: string;
+  title: string;
+  message: string;
+  severity: string;
+  alert_type: string;
+  created_at: string;
+}
 
-const recentAlerts = [
-  { id: 1, machine: 'Injection Molding #3', issue: 'Temperature threshold exceeded', severity: 'high', time: '2 min ago' },
-  { id: 2, machine: 'Extrusion Line #1', issue: 'Low material level', severity: 'medium', time: '15 min ago' },
-  { id: 3, machine: 'Quality Station #2', issue: 'Defect rate above normal', severity: 'high', time: '32 min ago' },
-];
+interface DashboardMetrics {
+  totalBatches: number;
+  activeBatches: number;
+  completedToday: number;
+  efficiency: number;
+  rejectedUnits: number;
+  downtime: number;
+}
 
-export function ProductionManagerDashboard() {
+const ProductionManagerDashboard = () => {
+  const [batches, setBatches] = useState<ProductionBatch[]>([]);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [metrics, setMetrics] = useState<DashboardMetrics>({
+    totalBatches: 0,
+    activeBatches: 0,
+    completedToday: 0,
+    efficiency: 0,
+    rejectedUnits: 0,
+    downtime: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  // Sample production data for charts
+  const productionData = [
+    { day: 'Mon', planned: 100, actual: 95, efficiency: 95 },
+    { day: 'Tue', planned: 120, actual: 118, efficiency: 98 },
+    { day: 'Wed', planned: 110, actual: 105, efficiency: 95 },
+    { day: 'Thu', planned: 130, actual: 135, efficiency: 104 },
+    { day: 'Fri', planned: 115, actual: 112, efficiency: 97 },
+    { day: 'Sat', planned: 90, actual: 88, efficiency: 98 },
+    { day: 'Sun', planned: 80, actual: 82, efficiency: 103 }
+  ];
+
+  const machineUtilization = [
+    { name: 'Machine A', value: 85, color: '#0088FE' },
+    { name: 'Machine B', value: 92, color: '#00C49F' },
+    { name: 'Machine C', value: 78, color: '#FFBB28' },
+    { name: 'Machine D', value: 96, color: '#FF8042' },
+    { name: 'Machine E', value: 65, color: '#8884D8' }
+  ];
+
+  const machineStatusData = [
+    { name: 'Running', value: 8, color: '#22c55e' },
+    { name: 'Idle', value: 2, color: '#f59e0b' },
+    { name: 'Maintenance', value: 1, color: '#ef4444' },
+  ];
+
+  useEffect(() => {
+    fetchDashboardData();
+    
+    // Set up real-time subscription for alerts
+    const alertsChannel = supabase
+      .channel('production-alerts')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'production_alerts' },
+        () => fetchAlerts()
+      )
+      .subscribe();
+
+    // Set up real-time subscription for batches
+    const batchesChannel = supabase
+      .channel('production-batches')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'production_batches' },
+        () => fetchBatches()
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(alertsChannel);
+      supabase.removeChannel(batchesChannel);
+    };
+  }, []);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    await Promise.all([fetchBatches(), fetchAlerts(), fetchMetrics()]);
+    setLoading(false);
+  };
+
+  const fetchBatches = async () => {
+    const { data, error } = await supabase
+      .from('production_batches')
+      .select(`
+        *,
+        products (name, sku),
+        machines (name, status)
+      `)
+      .order('scheduled_start', { ascending: true });
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to fetch production batches", variant: "destructive" });
+    } else {
+      setBatches(data || []);
+    }
+  };
+
+  const fetchAlerts = async () => {
+    const { data, error } = await supabase
+      .from('production_alerts')
+      .select('*')
+      .eq('is_read', false)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to fetch alerts", variant: "destructive" });
+    } else {
+      setAlerts(data || []);
+    }
+  };
+
+  const fetchMetrics = async () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Fetch batch metrics
+      const { data: batchData } = await supabase
+        .from('production_batches')
+        .select('status, target_quantity, produced_quantity, rejected_quantity');
+
+      if (batchData) {
+        const totalBatches = batchData.length;
+        const activeBatches = batchData.filter(b => b.status === 'in_progress').length;
+        const completedToday = batchData.filter(b => b.status === 'completed').length;
+        
+        const totalTarget = batchData.reduce((sum, b) => sum + (b.target_quantity || 0), 0);
+        const totalProduced = batchData.reduce((sum, b) => sum + (b.produced_quantity || 0), 0);
+        const efficiency = totalTarget > 0 ? Math.round((totalProduced / totalTarget) * 100) : 0;
+        
+        const rejectedUnits = batchData.reduce((sum, b) => sum + (b.rejected_quantity || 0), 0);
+
+        setMetrics({
+          totalBatches,
+          activeBatches,
+          completedToday,
+          efficiency,
+          rejectedUnits,
+          downtime: 45 // Mock data
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+    }
+  };
+
+  const updateBatchStatus = async (batchId: string, newStatus: string) => {
+    const updates: any = { status: newStatus };
+    
+    if (newStatus === 'in_progress' && !batches.find(b => b.id === batchId)?.actual_start) {
+      updates.actual_start = new Date().toISOString();
+    }
+
+    const { error } = await supabase
+      .from('production_batches')
+      .update(updates)
+      .eq('id', batchId);
+
+    if (error) {
+      toast({ title: "Error", description: "Failed to update batch status", variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Batch status updated successfully" });
+      fetchBatches();
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'scheduled': return 'bg-blue-500';
+      case 'in_progress': return 'bg-green-500';
+      case 'completed': return 'bg-gray-500';
+      case 'paused': return 'bg-yellow-500';
+      case 'cancelled': return 'bg-red-500';
+      default: return 'bg-gray-400';
+    }
+  };
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 'bg-red-500';
+      case 'high': return 'bg-orange-500';
+      case 'medium': return 'bg-yellow-500';
+      case 'low': return 'bg-blue-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-6">
       <WelcomeHeader />
@@ -193,20 +381,20 @@ export function ProductionManagerDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {recentAlerts.map((alert) => (
+            {alerts.map((alert) => (
               <div key={alert.id} className="flex items-center justify-between p-3 bg-gray-800/50 rounded-lg border border-gray-700 hover:bg-gray-800/70 transition-colors">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <Badge variant={alert.severity === 'high' ? 'destructive' : 'default'}>
                       {alert.severity}
                     </Badge>
-                    <span className="font-medium text-white">{alert.machine}</span>
+                    <span className="font-medium text-white">{alert.title}</span>
                   </div>
-                  <p className="text-sm text-gray-400 mt-1">{alert.issue}</p>
+                  <p className="text-sm text-gray-400 mt-1">{alert.message}</p>
                 </div>
                 <div className="text-sm text-gray-500 flex items-center">
                   <Clock className="h-4 w-4 mr-1" />
-                  {alert.time}
+                  {new Date(alert.created_at).toLocaleTimeString()}
                 </div>
               </div>
             ))}
@@ -215,4 +403,6 @@ export function ProductionManagerDashboard() {
       </Card>
     </div>
   );
-}
+};
+
+export default ProductionManagerDashboard;
