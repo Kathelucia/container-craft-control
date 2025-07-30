@@ -10,6 +10,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProductionManagerDashboard } from "@/components/dashboard/ProductionManagerDashboard";
 import { MachineOperatorDashboard } from "@/components/dashboard/MachineOperatorDashboard";
 import { AdminExecutiveDashboard } from "@/components/dashboard/AdminExecutiveDashboard";
+import Index from "@/pages/Index";
 import { ProductionWorkflow } from "@/components/production/ProductionWorkflow";
 import { MachineStatus } from "@/components/machines/MachineStatus";
 import { SalesOrders } from "@/components/sales/SalesOrders";
@@ -88,11 +89,7 @@ const App = () => (
             <Route path="/auth" element={<AuthPage />} />
             <Route
               path="/"
-              element={
-                <ProtectedRoute>
-                  <Navigate to="/dashboard" replace />
-                </ProtectedRoute>
-              }
+              element={<Index />}
             />
             <Route
               path="/dashboard"
